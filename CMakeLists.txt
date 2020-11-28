@@ -128,6 +128,7 @@ install(FILES "${BUILT_CONFIG_VERSION_CMAKE}"
 
 # TEST
 if(SBOOST_TEST)
+    file(COPY "resources/testres" DESTINATION ${BUILD_OUTPUT_ROOT_DIRECTORY})
     include(Thirdparty)
     build_gtest()
     # Setup googletest
