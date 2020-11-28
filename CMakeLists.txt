@@ -158,7 +158,7 @@ if(SBOOST_TEST)
         encoding/deltabp_test.cc)
 
     add_executable(sboost_all_test ${SBOOST_TEST_SRC})
-    target_link_libraries(sboost_all_test PRIVATE sboost_static GTest::GTest GTest::Main)
+    target_link_libraries(sboost_all_test PRIVATE sboost_static GTest::GTest GTest::Main pthread)
     target_compile_options(sboost_all_test PUBLIC ${SBOOST_SIMD_FLAGS})
 endif()
 

@@ -15,6 +15,7 @@ macro(build_gtest)
 
     set(GTEST_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/googletest_ep-prefix/src/googletest_ep")
     set(GTEST_INCLUDE_DIR "${GTEST_PREFIX}/include")
+    set(GMOCK_INCLUDE_DIR "${GTEST_PREFIX}/include")
 
     set(_GTEST_RUNTIME_DIR ${BUILD_OUTPUT_ROOT_DIRECTORY})
 
@@ -37,10 +38,10 @@ macro(build_gtest)
             -DBUILD_SHARED_LIBS=OFF
             -DCMAKE_CXX_FLAGS=${GTEST_CMAKE_CXX_FLAGS}
             -DCMAKE_CXX_FLAGS_${UPPERCASE_BUILD_TYPE}=${GTEST_CMAKE_CXX_FLAGS})
-    set(GMOCK_INCLUDE_DIR "${GTEST_PREFIX}/include")
 
-    list(APPEND GTEST_CMAKE_ARGS "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${_GTEST_RUNTIME_DIR}"
-                "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY_${UPPERCASE_BUILD_TYPE}=${_GTEST_RUNTIME_DIR}")
+
+    #list(APPEND GTEST_CMAKE_ARGS "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=${_GTEST_RUNTIME_DIR}"
+    #            "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY_${UPPERCASE_BUILD_TYPE}=${_GTEST_RUNTIME_DIR}")
 
 #    add_definitions(-DGTEST_LINKED_AS_SHARED_LIBRARY=1)
 
@@ -49,12 +50,12 @@ macro(build_gtest)
             URL ${GTEST_SOURCE_URL}
             BUILD_BYPRODUCTS ${GTEST_STATIC_LIB} ${GTEST_MAIN_STATIC_LIB}
             ${GMOCK_STATIC_LIB}
-            INSTALL_DIR
-            ${_GTEST_RUNTIME_DIR}
             CMAKE_ARGS ${GTEST_CMAKE_ARGS} ${EP_LOG_OPTIONS})
 
     # The include directory must exist before it is referenced by a target.
     file(MAKE_DIRECTORY "${GTEST_INCLUDE_DIR}")
+
+    # Copy artifacts
 
     add_library(GTest::GTest STATIC IMPORTED)
 
