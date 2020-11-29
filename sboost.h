@@ -47,6 +47,8 @@ namespace sboost {
 
         void geq(const uint8_t *data, uint32_t numEntry, uint64_t *res, uint32_t resoffset);
 
+        uint32_t geq(const uint8_t *data, uint32_t numEntry);
+
         void rangele(const uint8_t *data, uint32_t numEntry, uint64_t *res, uint32_t resoffset);
 
         void between(const uint8_t *data, uint32_t numEntry, uint64_t *res, uint32_t resoffset);

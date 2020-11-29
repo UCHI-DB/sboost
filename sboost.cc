@@ -36,6 +36,9 @@ namespace sboost {
         return _mm_popcnt_u64(bits);
     }
 
+    static uint32_t lowestBit(uint64_t input) {
+        return _mm_popcnt_u64((input & (input - 1) ^ input) - 1);
+    }
 
     const uint64_t MASKS_64[] = {0, 0, 0x5555555555555555L, 0x36DB6DB6DB6DB6DBL, 0x7777777777777777L,
                                  0x7BDEF7BDEF7BDEFL,
@@ -193,6 +196,40 @@ namespace sboost {
                 writeNext(res, _pext_u64(r[i], extract) & ((1L << entryInBlock[i]) - 1),
                           entryInBlock[i], &resindex, &resoffset);
             }
+        }
+    }
+
+    uint32_t Bitpack::geq(const uint8_t *data, uint32_t numEntry) {
+        uint64_t buffer[] = {0, 0, 0, 0, 0, 0, 0, 0};
+
+        uint32_t counter = 0;
+        uint32_t byteindex = 0;
+        uint32_t bitoffset = 0;
+        uint32_t entryInBlock[] = {0, 0, 0, 0, 0, 0, 0, 0};
+
+        while (counter < numEntry) {
+            // Load next block and align it
+            for (int i = 0; i < 8; i++) {
+                buffer[i] = loadNext(data, bitWidth, &byteindex, &bitoffset, entryInBlock + i);
+            }
+            // Use SBoost algorithm to compare the loaded block with spanned
+            __m512i loaded = _mm512_setr_epi64(buffer[0], buffer[1], buffer[2], buffer[3],
+                                               buffer[4], buffer[5], buffer[6], buffer[7]);
+            __m512i l = _mm512_sub_epi64(_mm512_or_si512(loaded, msbmask), l2);
+            __m512i r = _mm512_and_si512(_mm512_or_si512(loaded, nspanned),
+                                         _mm512_or_si512(_mm512_and_si512(loaded, nspanned), l));
+
+            // Use PEXT to collect result, use popcnt to count data
+
+            for (int i = 0; i < 8; ++i) {
+                auto res = _pext_u64(r[i], extract) & ((1L << entryInBlock[i]) - 1);
+                if (res != 0) {
+                    return counter + lowestBit(res);
+                } else {
+                    counter += entryInBlock[i];
+                }
+            }
+            return -1;
         }
     }
 

@@ -70,7 +70,7 @@ set(SBOOST_SRC
         encoding/rlehybrid.cc
         simd.cc)
 
-set(SBOOST_HEADER "unpacker.h;sboost.h")
+set(SBOOST_HEADER "unpacker.h;sboost.h;byteutils.h")
 
 add_library(sboost_objlib OBJECT ${SBOOST_SRC})
 set_property(TARGET sboost_objlib PROPERTY POSITION_INDEPENDENT_CODE 1)
