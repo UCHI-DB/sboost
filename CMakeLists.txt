@@ -96,16 +96,12 @@ install(TARGETS sboost_static
 
 add_library(sboost_shared SHARED $<TARGET_OBJECTS:sboost_objlib>)
 set_target_properties(sboost_shared
-        PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BUILD_OUTPUT_ROOT_DIRECTORY}"
-        OUTPUT_NAME sboost${CMAKE_SBOOST_DEBUG_EXTENSION}
-        PUBLIC_HEADER "${SBOOST_HEADER}")
-set_target_properties(sboost_shared
         PROPERTIES LIBRARY_OUTPUT_DIRECTORY
         "${BUILD_OUTPUT_ROOT_DIRECTORY}"
         RUNTIME_OUTPUT_DIRECTORY
         "${BUILD_OUTPUT_ROOT_DIRECTORY}"
-        OUTPUT_NAME
-        sboost
+        OUTPUT_NAME sboost${CMAKE_SBOOST_DEBUG_EXTENSION}
+        PUBLIC_HEADER "${SBOOST_HEADER}"
         VERSION
         1.0.0
         SOVERSION
