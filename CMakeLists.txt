@@ -71,6 +71,7 @@ set(SBOOST_SRC
         simd.cc)
 
 set(SBOOST_HEADER
+        unpacker.h
         sboost.h
         )
 
