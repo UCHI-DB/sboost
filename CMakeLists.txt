@@ -70,10 +70,7 @@ set(SBOOST_SRC
         encoding/rlehybrid.cc
         simd.cc)
 
-set(SBOOST_HEADER
-        unpacker.h
-        sboost.h
-        )
+set(SBOOST_HEADER "unpacker.h;sboost.h")
 
 add_library(sboost_objlib OBJECT ${SBOOST_SRC})
 set_property(TARGET sboost_objlib PROPERTY POSITION_INDEPENDENT_CODE 1)
@@ -89,7 +86,7 @@ add_library(sboost_static STATIC $<TARGET_OBJECTS:sboost_objlib>)
 set_target_properties(sboost_static
         PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BUILD_OUTPUT_ROOT_DIRECTORY}"
         OUTPUT_NAME sboost${CMAKE_SBOOST_DEBUG_EXTENSION}
-        PUBLIC_HEADER ${SBOOST_HEADER})
+        PUBLIC_HEADER "${SBOOST_HEADER}")
 install(TARGETS sboost_static
         EXPORT sboost_targets
         RUNTIME DESTINATION ${RUNTIME_INSTALL_DIR}
@@ -101,7 +98,7 @@ add_library(sboost_shared SHARED $<TARGET_OBJECTS:sboost_objlib>)
 set_target_properties(sboost_shared
         PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BUILD_OUTPUT_ROOT_DIRECTORY}"
         OUTPUT_NAME sboost${CMAKE_SBOOST_DEBUG_EXTENSION}
-        PUBLIC_HEADER ${SBOOST_HEADER})
+        PUBLIC_HEADER "${SBOOST_HEADER}")
 set_target_properties(sboost_shared
         PROPERTIES LIBRARY_OUTPUT_DIRECTORY
         "${BUILD_OUTPUT_ROOT_DIRECTORY}"
