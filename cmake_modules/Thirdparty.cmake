@@ -14,23 +14,22 @@ macro(build_gtest)
     endif()
 
     set(GTEST_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/googletest_ep-prefix/src/googletest_ep")
+
     set(GTEST_INCLUDE_DIR "${GTEST_PREFIX}/include")
     set(GMOCK_INCLUDE_DIR "${GTEST_PREFIX}/include")
+    set(GTEST_LIBRARY_DIR ${GTEST_PREFIX}/lib)
 
     set(_GTEST_RUNTIME_DIR ${BUILD_OUTPUT_ROOT_DIRECTORY})
 
-    set(_GTEST_IMPORTED_TYPE IMPORTED_LOCATION)
-    set(_GTEST_LIBRARY_SUFFIX
-                "${CMAKE_GTEST_DEBUG_EXTENSION}${CMAKE_STATIC_LIBRARY_SUFFIX}")
+    set(_GTEST_LIBRARY_SUFFIX "${CMAKE_GTEST_DEBUG_EXTENSION}${CMAKE_STATIC_LIBRARY_SUFFIX}")
 
-    set(_GTEST_LIBRARY_DIR "${_GTEST_RUNTIME_DIR}")
 
     set(GTEST_STATIC_LIB
-            "${GTEST_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${_GTEST_LIBRARY_SUFFIX}")
+            "${GTEST_LIBRARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${_GTEST_LIBRARY_SUFFIX}")
     set(GMOCK_STATIC_LIB
-            "${GTEST_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gmock${_GTEST_LIBRARY_SUFFIX}")
+            "${GTEST_LIBRARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}gmock${_GTEST_LIBRARY_SUFFIX}")
     set(GTEST_MAIN_STATIC_LIB
-            "${GTEST_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${_GTEST_LIBRARY_SUFFIX}")
+            "${GTEST_LIBRARY_DIR}/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${_GTEST_LIBRARY_SUFFIX}")
     set(GTEST_CMAKE_ARGS
             ${EP_COMMON_TOOLCHAIN}
             -DCMAKE_BUILD_TYPE=${UPPERCASE_BUILD_TYPE}
@@ -45,7 +44,6 @@ macro(build_gtest)
 
 #    add_definitions(-DGTEST_LINKED_AS_SHARED_LIBRARY=1)
 
-    message("GTEST_CMAKE_ARGS " ${GTEST_CMAKE_ARGS})
     externalproject_add(googletest_ep
             URL ${GTEST_SOURCE_URL}
             BUILD_BYPRODUCTS ${GTEST_STATIC_LIB} ${GTEST_MAIN_STATIC_LIB}
@@ -55,22 +53,20 @@ macro(build_gtest)
     # The include directory must exist before it is referenced by a target.
     file(MAKE_DIRECTORY "${GTEST_INCLUDE_DIR}")
 
-    # Copy artifacts
-
     add_library(GTest::GTest STATIC IMPORTED)
 
     set_target_properties(GTest::GTest
-            PROPERTIES ${_GTEST_IMPORTED_TYPE} "${GTEST_STATIC_LIB}"
+            PROPERTIES IMPORTED_LOCATION "${GTEST_STATIC_LIB}"
             INTERFACE_INCLUDE_DIRECTORIES "${GTEST_INCLUDE_DIR}")
 
     add_library(GTest::Main STATIC IMPORTED)
     set_target_properties(GTest::Main
-            PROPERTIES ${_GTEST_IMPORTED_TYPE} "${GTEST_MAIN_STATIC_LIB}"
+            PROPERTIES IMPORTED_LOCATION "${GTEST_MAIN_STATIC_LIB}"
             INTERFACE_INCLUDE_DIRECTORIES "${GTEST_INCLUDE_DIR}")
 
     add_library(GTest::GMock STATIC IMPORTED)
     set_target_properties(GTest::GMock
-            PROPERTIES ${_GTEST_IMPORTED_TYPE} "${GMOCK_STATIC_LIB}"
+            PROPERTIES IMPORTED_LOCATION "${GMOCK_STATIC_LIB}"
             INTERFACE_INCLUDE_DIRECTORIES "${GTEST_INCLUDE_DIR}")
     add_dependencies(GTest::GTest googletest_ep)
     add_dependencies(GTest::Main googletest_ep)
