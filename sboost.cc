@@ -2,12 +2,14 @@
 // Created by harper on 9/30/19.
 //
 
+#include <cstring>
 #include "sboost.h"
+#include "loader.h"
 #include "byteutils.h"
 
 namespace sboost {
 
-    static uint64_t
+    uint64_t
     loadNext(const uint8_t *data, uint32_t bitwidth, uint32_t *byteindex, uint32_t *bitoffset, uint32_t *entryInBlock) {
         // Load next block and align it
         uint64_t loaded = (((uint64_t *) (data + *byteindex))[0] >> *bitoffset);
@@ -20,7 +22,7 @@ namespace sboost {
         return loaded;
     }
 
-    static uint8_t
+    uint8_t
     writeNext(uint64_t *res, uint64_t bits, uint32_t entryInBlock, uint32_t *resindex, uint32_t *resoffset) {
         res[*resindex] |= bits << *resoffset;
         *resoffset += entryInBlock;
@@ -31,10 +33,12 @@ namespace sboost {
             // anything it should be fine. But be aware of this in case it causes any bugs
             *resindex += 1;
             *resoffset &= 0x3F;
-            res[*resindex] |= bits >> (entryInBlock - *resoffset);
+            if (*resoffset != 0)
+                res[*resindex] |= bits >> (entryInBlock - *resoffset);
         }
         return _mm_popcnt_u64(bits);
     }
+
 
     static uint32_t lowestBit(uint64_t input) {
         return _mm_popcnt_u64((input & (input - 1) ^ input) - 1);
@@ -51,7 +55,7 @@ namespace sboost {
                                  0x1FFFFFFFBFFFFFFFL,
     };
 
-    const uint64_t EXTRACT_64[] = {0, 0,
+    extern const uint64_t EXTRACT_64[] = {0, 0,
                                    0xAAAAAAAAAAAAAAAAL, 0x4924924924924924L, 0x8888888888888888L, 0x842108421084210L,
                                    0x820820820820820L, 0x4081020408102040L, 0x8080808080808080L, 0x4020100804020100L,
                                    0x802008020080200L, 0x40080100200400L, 0x800800800800800L, 0x8004002001000L,
@@ -88,9 +92,7 @@ namespace sboost {
         this->g22 = _mm512_or_si512(spanned2, msbmask);
     }
 
-    Bitpack::~Bitpack() {
-
-    }
+    Bitpack::~Bitpack() {}
 
     void Bitpack::equal(const uint8_t *data, uint32_t numEntry, uint64_t *res, uint32_t resoffset) {
         uint64_t buffer[] = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -388,6 +390,171 @@ namespace sboost {
                           entryInBlock[i], &resindex, &resoffset);
             }
         }
+    }
+
+    uint32_t estimateGroupSize(uint32_t bitWidth) {
+        // Estimate group size
+        uint32_t byteindex = 0;
+        uint32_t bitoffset = 0;
+        uint32_t entries = 0;
+        for (int i = 0; i < 8; i++) {
+            // Update index and offset
+            auto entryInBlock = (64 - bitoffset) / bitWidth;
+            uint32_t bitadvance = entryInBlock * bitWidth + (bitoffset);
+            bitoffset = bitadvance & 0x7;
+            byteindex += bitadvance >> 3;
+
+            entries += entryInBlock;
+        }
+        return ((entries >> 3) << 3);
+    }
+
+    TemplateBitpack::TemplateBitpack(uint32_t bitWidth, uint32_t target) : Bitpack(bitWidth, target) {
+        entry_in_blocks_ = loader::entryInBlocks[bitWidth];
+        group_size_ = estimateGroupSize(bitWidth);
+        group_bytes_ = (group_size_ * bitWidth) >> 3;
+    }
+
+    void TemplateBitpack::tgeq(const uint8_t *data, uint32_t numEntry, uint64_t *res, uint32_t resoffset) {
+        uint64_t buffer[] = {0, 0, 0, 0, 0, 0, 0, 0};
+
+        uint32_t counter = 0;
+
+        uint32_t resindex = resoffset >> 6;
+        resoffset &= 0x3F;
+
+        auto loader = loader::loaders[bitWidth];
+
+        while (counter < numEntry) {
+            // Load next block and align it
+            loader(data, buffer);
+            data += group_bytes_;
+            counter += group_size_;
+            if (counter > numEntry) {
+                counter = numEntry;
+            }
+
+            // Use SBoost algorithm to compare the loaded block with spanned
+            __m512i loaded = _mm512_setr_epi64(buffer[0], buffer[1], buffer[2], buffer[3],
+                                               buffer[4], buffer[5], buffer[6], buffer[7]);
+            __m512i l = _mm512_sub_epi64(_mm512_or_si512(loaded, msbmask), l2);
+            __m512i r = _mm512_and_si512(_mm512_or_si512(loaded, nspanned),
+                                         _mm512_or_si512(_mm512_and_si512(loaded, nspanned), l));
+
+            // Use PEXT to collect result, use popcnt to count data
+            for (int i = 0; i < 8; i++) {
+                writeNext(res, _pext_u64(r[i], extract) & ((1L << entry_in_blocks_[i]) - 1),
+                          entry_in_blocks_[i], &resindex, &resoffset);
+            }
+        }
+    }
+
+    SortedBitpack::SortedBitpack(uint32_t bitWidth, uint32_t target) : Bitpack(bitWidth, target) {
+        loader_ = loader::loaders[bitWidth];
+        writer_ = loader::writers[bitWidth];
+        entry_in_block_ = loader::entryInBlocks[bitWidth];
+        group_size_ = estimateGroupSize(bitWidth);
+
+        group_bytes_ = (group_size_ * bitWidth) >> 3;
+
+        last_index_ = (group_size_ - 1) >> 6;
+        last_offset_ = ((group_size_ - 1) & 0x3F) - 1;
+    }
+
+    SortedBitpack::~SortedBitpack() noexcept {
+
+    }
+
+    uint8_t SortedBitpack::geqGroup(const uint8_t *group_start, uint64_t *res) {
+        loader_(group_start, buffer_);
+
+        // Use SBoost algorithm to compare the loaded block with spanned
+        __m512i loaded = _mm512_setr_epi64(buffer_[0], buffer_[1], buffer_[2], buffer_[3],
+                                           buffer_[4], buffer_[5], buffer_[6], buffer_[7]);
+        __m512i l = _mm512_sub_epi64(_mm512_or_si512(loaded, msbmask), l2);
+        __m512i r = _mm512_and_si512(_mm512_or_si512(loaded, nspanned),
+                                     _mm512_or_si512(_mm512_and_si512(loaded, nspanned), l));
+
+        memset(res,0,64);
+        writer_(r, res, extract);
+    }
+
+//    uint8_t SortedBitpack::geqGroup2(const uint8_t *group_start, uint64_t *res) {
+//        loader_(group_start, buffer_);
+//
+//        // Use SBoost algorithm to compare the loaded block with spanned
+//        __m512i loaded = _mm512_setr_epi64(buffer_[0], buffer_[1], buffer_[2], buffer_[3],
+//                                           buffer_[4], buffer_[5], buffer_[6], buffer_[7]);
+//        __m512i l = _mm512_sub_epi64(_mm512_or_si512(loaded, msbmask), l2);
+//        __m512i r = _mm512_and_si512(_mm512_or_si512(loaded, nspanned),
+//                                     _mm512_or_si512(_mm512_and_si512(loaded, nspanned), l));
+//
+//        uint32_t resindex = 0;
+//        uint32_t resoffset = 0;
+//        memset(res,0,64);
+//        for (int i = 0; i < 8; i++) {
+//            writeNext(res, _pext_u64(r[i], extract) & ((1L << entry_in_block_[i]) - 1),
+//                      entry_in_block_[i], &resindex, &resoffset);
+//        }
+//    }
+
+    uint32_t SortedBitpack::geq(const uint8_t *data, uint32_t numEntry) {
+        auto num_groups = (numEntry + 1) / group_size_;
+        // Estimate group size
+
+        uint64_t bitmap_result[8];
+
+        uint8_t compare_result[num_groups];
+        memset(compare_result, 2, num_groups);
+
+        uint32_t begin = 0;
+        uint32_t end = num_groups - 1;
+        while (true) {
+            auto current = (begin + end) / 2;
+            const uint8_t *current_buffer = data + current * group_bytes_;
+//            bitmap_result[bitmap_last_index] = -1;
+            // Make comparison
+            geqGroup(current_buffer, bitmap_result);
+            // Get first and last bit
+            auto first = bitmap_result[0] & 1;
+            auto last = (bitmap_result[last_index_] >> last_offset_) & 1;
+            // If all large
+            if (first) {
+                end = current;
+                if (compare_result[current] == 2) {
+                    compare_result[current] = 1;
+                    if (compare_result[current - 1] == 0)
+                        return (current - 1) * group_size_;
+                } else {
+                    break;
+                }
+            } else if (!last) {
+                // If all small
+                begin = current;
+                if (compare_result[current] == 2) {
+                    compare_result[current] = 0;
+                    if (compare_result[current + 1] == 1) {
+                        return current * group_size_;
+                    }
+                } else {
+                    break;
+                }
+            } else {
+                uint32_t offset = 0;
+                // Found between
+                for (uint32_t i = 0; i <= last_index_; ++i) {
+                    if (bitmap_result[i] == 0) {
+                        offset += 64;
+                    } else {
+                        offset += lowestBit(bitmap_result[i]);
+                        break;
+                    }
+                }
+                return current * group_size_ + offset;
+            }
+        }
+        // No found in between, result on border
+        return (uint32_t) -1;
     }
 
     BitpackCompare::BitpackCompare(uint32_t bitWidth) {

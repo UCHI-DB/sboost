@@ -121,6 +121,27 @@ TEST(SBoost, Equal512) {
     }
 }
 
+TEST(SortedBitpackTest, Geq) {
+    uint32_t input[512];
+    for (int i = 0; i < 512; ++i) {
+        input[i] = i;
+    }
+    uint8_t bitpacked[512 * 4];
+    memset(bitpacked, 0, 2048);
+    byteutils::bitpack(input, 512, 9, bitpacked);
+
+    auto result = 0;
+//    // Test search in the middle
+    SortedBitpack sbp(9, 139);
+    result = sbp.geq(bitpacked, 512);
+    EXPECT_EQ(139, result);
+
+    // Test on the front border
+    SortedBitpack sbp_fb(9, 144);
+    result = sbp_fb.geq(bitpacked, 512);
+    EXPECT_EQ(144, result);
+}
+
 TEST(BitpackCompareTest, Less) {
     uint32_t input1[] = {13, 22, 1, 9, 25, 17, 6, 22, 12, 31, 12, 21, 0, 5};
     uint8_t bitpacked1[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -151,6 +172,40 @@ TEST(SDelta, Cumsum) {
 
     for (int i = 0; i < 8; i++) {
         EXPECT_EQ(values[i], (cs[i / 2] >> (i % 2) * 32) & 0xFFFFFFFF);
+    }
+}
+
+namespace sboost {
+    extern uint8_t
+    writeNext(uint64_t *res, uint64_t bits, uint32_t entryInBlock, uint32_t *resindex, uint32_t *resoffset);
+}
+
+#include "loader.h"
+
+namespace sboost {
+    extern const uint64_t EXTRACT_64[];
+}
+
+TEST(LoaderTest, Writer) {
+    __m512i target = _mm512_setr4_epi64(0x12345678ABCDEF2, 0x112234552DEF4233, 0x2424249873DDDEFF, 0x375928DEab558901);
+    for (int i = 2; i < 32; ++i) {
+        auto extract = sboost::EXTRACT_64[i];
+        auto entryInBlock = loader::entryInBlocks[i];
+        uint64_t buffer1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+
+        loader::writers[i](target, buffer1, extract);
+
+        uint64_t buffer2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+        uint32_t resindex = 0;
+        uint32_t resoffset = 0;
+        for (int i = 0; i < 8; i++) {
+            writeNext(buffer2, _pext_u64(target[i], extract) & ((1L << entryInBlock[i]) - 1),
+                      entryInBlock[i], &resindex, &resoffset);
+        }
+
+        for (int k = 0; k < 8; ++k) {
+            EXPECT_EQ(buffer1[k], buffer2[k]) << i << ',' << k;
+        }
     }
 }
 

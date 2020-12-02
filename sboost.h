@@ -54,6 +54,50 @@ namespace sboost {
         void between(const uint8_t *data, uint32_t numEntry, uint64_t *res, uint32_t resoffset);
     };
 
+    /**
+     * Deprecated
+     *
+     * Benchmark shows using template does not make it faster
+     */
+    class TemplateBitpack : public Bitpack {
+    protected:
+        uint32_t group_size_;
+        uint32_t group_bytes_;
+        uint32_t *entry_in_blocks_;
+    public:
+        TemplateBitpack(uint32_t bitWidth, uint32_t target);
+
+        void tgeq(const uint8_t *data, uint32_t numEntry, uint64_t *res, uint32_t resoffset);
+    };
+
+    /**
+     * Specialized in searching sorted bitpack stream, using binary search
+     */
+    class SortedBitpack : Bitpack {
+    public:
+        SortedBitpack(uint32_t bitWidth, uint32_t target);
+
+        virtual ~SortedBitpack();
+
+        uint32_t geq(const uint8_t *data, uint32_t numEntry);
+
+    protected:
+        uint64_t buffer_[8];
+        uint32_t *entry_in_block_;
+        uint32_t group_size_;
+        uint32_t group_bytes_;
+
+        uint32_t last_index_;
+        uint32_t last_offset_;
+
+        void (*loader_)(const uint8_t *, uint64_t *);
+        void (*writer_)(__m512i, uint64_t*,uint64_t);
+
+        uint8_t geqGroup(const uint8_t *group_start, uint64_t *);
+        // Benchmark (loader_benchmark) shows this is not much faster
+        uint8_t geqGroup2(const uint8_t *group_start, uint64_t *);
+    };
+
     class BitpackCompare {
     protected:
         uint32_t bit_width_;

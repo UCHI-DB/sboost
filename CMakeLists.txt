@@ -68,7 +68,8 @@ set(SBOOST_SRC
         encoding/deltabp.cc
         encoding/encoding_utils.cc
         encoding/rlehybrid.cc
-        simd.cc)
+        simd.cc
+        loader.cc)
 
 set(SBOOST_HEADER "unpacker.h;sboost.h;byteutils.h")
 
@@ -134,29 +135,15 @@ write_basic_package_version_file("${BUILT_CONFIG_VERSION_CMAKE}"
 install(FILES "${BUILT_CONFIG_VERSION_CMAKE}"
         DESTINATION "${CMAKE_INSTALL_DIR}")
 
+include(Thirdparty)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 # TEST
 if(SBOOST_TEST)
     file(COPY "resources/testres" DESTINATION ${BUILD_OUTPUT_ROOT_DIRECTORY})
-    include(Thirdparty)
+
     build_gtest()
     # Setup googletest
-    # set(GTEST_PATH "third_party/googletest")
-    # set(GTEST_SHARED_LIB ${GTEST_PATH}/lib/libgtest.a)
-    # set(GTEST_MAIN_SHARED_LIB ${GTEST_PATH}/lib/libgtest_main.a)
-    # set(GTEST_INCLUDE_DIR ${GTEST_PATH}/googletest/include)
-
-    # message(${GTEST_SHARED_LIB})
-    # message(${GTEST_MAIN_SHARED_LIB})
-
-    # add_library(GTest::GTest STATIC IMPORTED)
-    # set_target_properties(GTest::GTest
-    #        PROPERTIES IMPORTED_LOCATION "${GTEST_SHARED_LIB}"
-    #        INTERFACE_INCLUDE_DIRECTORIES "${GTEST_INCLUDE_DIR}")
-
-    # add_library(GTest::Main STATIC IMPORTED)
-    # set_target_properties(GTest::Main
-    #        PROPERTIES IMPORTED_LOCATION "${GTEST_MAIN_SHARED_LIB}"
-    #        INTERFACE_INCLUDE_DIRECTORIES "${GTEST_INCLUDE_DIR}")
 
     set(SBOOST_TEST_SRC
         bitmap_writer_test.cc
@@ -174,10 +161,23 @@ endif()
 # Benchmark
 
 if(SBOOST_BENCHMARK)
+    build_gbenchmark()
     set(SBOOST_BENCHMARK_LINK_OPTION benchmark::benchmark benchmark::benchmark_main Threads::Threads
         sboost_static)
 
     add_executable(sboost_unpacker_benchmark unpacker_benchmark.cc)
     target_link_libraries(sboost_unpacker_benchmark PRIVATE ${SBOOST_BENCHMARK_LINK_OPTION})
     target_compile_options(sboost_unpacker_benchmark PUBLIC ${SBOOST_SIMD_FLAGS})
+
+    add_executable(sboost_sboost_benchmark sboost_benchmark.cc)
+    target_link_libraries(sboost_sboost_benchmark PRIVATE ${SBOOST_BENCHMARK_LINK_OPTION})
+    target_compile_options(sboost_sboost_benchmark PUBLIC ${SBOOST_SIMD_FLAGS})
+
+    add_executable(sboost_loader_benchmark loader_benchmark.cc)
+    target_link_libraries(sboost_loader_benchmark PRIVATE ${SBOOST_BENCHMARK_LINK_OPTION})
+    target_compile_options(sboost_loader_benchmark PUBLIC ${SBOOST_SIMD_FLAGS})
 endif()
+
+add_executable(sboost_tool tool.cc)
+target_link_libraries(sboost_tool PRIVATE sboost_static)
+target_compile_options(sboost_tool PUBLIC ${SBOOST_SIMD_FLAGS})
