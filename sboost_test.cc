@@ -131,15 +131,15 @@ TEST(SortedBitpackTest, Geq) {
     byteutils::bitpack(input, 10000, 14, bitpacked);
 
     auto result = 0;
-//    for(int i = 0 ; i < 10000;++i) {
-//    // Test search in the middle
-//        SortedBitpack sbp(14, i);
-//        result = sbp.geq(bitpacked, 10000);
-//        EXPECT_EQ(i, result) << i;
-//    }
-    SortedBitpack sbp(14, 32);
-    result = sbp.geq(bitpacked, 10000);
-    EXPECT_EQ(32, result);
+    for(int i = 0 ; i < 10000;++i) {
+    // Test search in the middle
+        SortedBitpack sbp(14, i);
+        result = sbp.geq(bitpacked, 10000);
+        EXPECT_EQ(i, result) << i;
+    }
+//    SortedBitpack sbp(14, 9952);
+//    result = sbp.geq(bitpacked, 10000);
+//    EXPECT_EQ(9952, result);
 
 }
 

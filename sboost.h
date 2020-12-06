@@ -100,13 +100,12 @@ namespace sboost {
          * @param group_start
          * @return
          */
-        uint8_t eqGroup(const uint8_t *group_start, uint64_t *);
+        int8_t eqGroup(const uint8_t *group_start, uint64_t *);
         /**
-         * Compare all entries in the group with target, return a bitmap
-         * marking those geq target.
+         * Find the index of first entry that is geq target.
          * @param group_start
          */
-        void geqGroup(const uint8_t *group_start, uint64_t *);
+        int8_t geqGroup(const uint8_t *group_start, uint64_t *);
         // Benchmark (loader_benchmark) shows this is not much faster
         /**
          * Same as geqGroup, used to determine whether generated code is

@@ -56,14 +56,18 @@ namespace sboost {
     };
 
     extern const uint64_t EXTRACT_64[] = {0, 0,
-                                   0xAAAAAAAAAAAAAAAAL, 0x4924924924924924L, 0x8888888888888888L, 0x842108421084210L,
-                                   0x820820820820820L, 0x4081020408102040L, 0x8080808080808080L, 0x4020100804020100L,
-                                   0x802008020080200L, 0x40080100200400L, 0x800800800800800L, 0x8004002001000L,
-                                   0x80020008002000L, 0x800100020004000L, 0x8000800080008000L, 0x4000200010000L,
-                                   0x20000800020000L, 0x100002000040000L, 0x800008000080000L, 0x4000020000100000L,
-                                   0x80000200000L, 0x200000400000L, 0x800000800000L, 0x2000001000000L, 0x8000002000000L,
-                                   0x20000004000000L, 0x80000008000000L, 0x200000010000000L, 0x800000020000000L,
-                                   0x2000000040000000L,
+                                          0xAAAAAAAAAAAAAAAAL, 0x4924924924924924L, 0x8888888888888888L,
+                                          0x842108421084210L,
+                                          0x820820820820820L, 0x4081020408102040L, 0x8080808080808080L,
+                                          0x4020100804020100L,
+                                          0x802008020080200L, 0x40080100200400L, 0x800800800800800L, 0x8004002001000L,
+                                          0x80020008002000L, 0x800100020004000L, 0x8000800080008000L, 0x4000200010000L,
+                                          0x20000800020000L, 0x100002000040000L, 0x800008000080000L,
+                                          0x4000020000100000L,
+                                          0x80000200000L, 0x200000400000L, 0x800000800000L, 0x2000001000000L,
+                                          0x8000002000000L,
+                                          0x20000004000000L, 0x80000008000000L, 0x200000010000000L, 0x800000020000000L,
+                                          0x2000000040000000L,
     };
 
     Bitpack::Bitpack(uint32_t bitWidth, uint32_t target) {
@@ -465,7 +469,7 @@ namespace sboost {
 
     SortedBitpack::~SortedBitpack() noexcept {}
 
-    void SortedBitpack::eqGroup(const uint8_t *group_start, uint64_t *res) {
+    int8_t SortedBitpack::eqGroup(const uint8_t *group_start, uint64_t *res) {
         loader_(group_start, buffer_);
 
         // Use SBoost algorithm to compare the loaded block with spanned
@@ -474,11 +478,20 @@ namespace sboost {
         __m512i d = _mm512_xor_si512(loaded, spanned);
         __m512i r = _mm512_or_si512(d, _mm512_add_epi64(_mm512_and_si512(d, mask), mask));
 
-        memset(res,0,64);
+        memset(res, 0, 64);
         writerinv_(r, res, extract);
+        uint8_t index = 0;
+        for (uint32_t i = 0; i <= last_index_; ++i) {
+            if (res[i] != 0) {
+                return index + _mm_popcnt_u64(res[i] - 1);
+            } else {
+                index += 64;
+            }
+        }
+        return -1;
     }
 
-    void SortedBitpack::geqGroup(const uint8_t *group_start, uint64_t *res) {
+    int8_t SortedBitpack::geqGroup(const uint8_t *group_start, uint64_t *res) {
         loader_(group_start, buffer_);
 
         // Use SBoost algorithm to compare the loaded block with spanned
@@ -488,8 +501,28 @@ namespace sboost {
         __m512i r = _mm512_and_si512(_mm512_or_si512(loaded, nspanned),
                                      _mm512_or_si512(_mm512_and_si512(loaded, nspanned), l));
 
-        memset(res,0,64);
+        memset(res, 0, 64);
         writer_(r, res, extract);
+
+        auto first = res[0] & 1;
+        auto last = (res[last_index_] >> last_offset_) & 1;
+        if (first) {
+            return 0;
+        } else if (!last) {
+            return -1;
+        } else {
+            uint32_t offset = 0;
+            // Found between
+            for (uint32_t i = 0; i <= last_index_; ++i) {
+                if (res[i] == 0) {
+                    offset += 64;
+                } else {
+                    offset += lowestBit(res[i]);
+                    break;
+                }
+            }
+            return offset;
+        }
     }
 
     void SortedBitpack::geqGroup2(const uint8_t *group_start, uint64_t *res) {
@@ -504,7 +537,7 @@ namespace sboost {
 
         uint32_t resindex = 0;
         uint32_t resoffset = 0;
-        memset(res,0,64);
+        memset(res, 0, 64);
         for (int i = 0; i < 8; i++) {
             writeNext(res, _pext_u64(r[i], extract) & ((1L << entry_in_block_[i]) - 1),
                       entry_in_block_[i], &resindex, &resoffset);
@@ -517,60 +550,23 @@ namespace sboost {
 
         uint64_t bitmap_result[8];
 
-        uint8_t compare_result[num_groups];
-        memset(compare_result, 2, num_groups);
-
         uint32_t begin = 0;
         uint32_t end = num_groups - 1;
-        while (true) {
+        while (begin != end) {
             auto current = (begin + end) / 2;
             const uint8_t *current_buffer = data + current * group_bytes_;
 //            bitmap_result[bitmap_last_index] = -1;
             // Make comparison
-            geqGroup(current_buffer, bitmap_result);
-            // Get first and last bit
-            auto first = bitmap_result[0] & 1;
-            auto last = (bitmap_result[last_index_] >> last_offset_) & 1;
-            // If all large
-            if (first) {
+            auto index = geqGroup(current_buffer, bitmap_result);
+            if (index != -1) {
                 end = current;
-                if (compare_result[current] == 2) {
-                    compare_result[current] = 1;
-                    if(current == 0) {
-                        return 0;
-                    }
-                    if (compare_result[current - 1] == 0) {
-                        return (current - 1) * group_size_;
-                    }
-                } else {
-                    break;
-                }
-            } else if (!last) {
-                // If all small
-                begin = current;
-                if (compare_result[current] == 2) {
-                    compare_result[current] = 0;
-                    if(current == num_groups-1) {
-                        return numEntry -1;
-                    }
-                    if (compare_result[current + 1] == 1) {
-                        return (current+1) * group_size_;
-                    }
-                } else {
-                    break;
+                auto eqindex = eqGroup(current_buffer, bitmap_result);
+                if (eqindex != -1) {
+                    return current * group_size_ + eqindex;
                 }
             } else {
-                uint32_t offset = 0;
-                // Found between
-                for (uint32_t i = 0; i <= last_index_; ++i) {
-                    if (bitmap_result[i] == 0) {
-                        offset += 64;
-                    } else {
-                        offset += lowestBit(bitmap_result[i]);
-                        break;
-                    }
-                }
-                return current * group_size_ + offset;
+                // If all small
+                begin = current;
             }
         }
         // No found in between, result on border
@@ -588,55 +584,42 @@ namespace sboost {
 
         uint32_t begin = 0;
         uint32_t end = num_groups - 1;
-        while (true) {
-            auto current = (begin + end) / 2;
+        while (begin < end) {
+            auto current = (begin + end + 1) / 2;
             const uint8_t *current_buffer = data + current * group_bytes_;
 //            bitmap_result[bitmap_last_index] = -1;
             // Make comparison
-            geqGroup(current_buffer, bitmap_result);
-            // Get first and last bit
-            auto first = bitmap_result[0] & 1;
-            auto last = (bitmap_result[last_index_] >> last_offset_) & 1;
+            auto index = geqGroup(current_buffer, bitmap_result);
             // If all large
-            if (first) {
+            if (index == 0) {
                 end = current;
                 if (compare_result[current] == 2) {
                     compare_result[current] = 1;
-                    if(current == 0) {
+                    if (current == 0) {
                         return 0;
                     }
                     if (compare_result[current - 1] == 0) {
-                        return (current - 1) * group_size_;
-                    }
-                } else {
-                    break;
-                }
-            } else if (!last) {
-                // If all small
-                begin = current;
-                if (compare_result[current] == 2) {
-                    compare_result[current] = 0;
-                    if(current == num_groups-1) {
-                        return numEntry -1;
-                    }
-                    if (compare_result[current + 1] == 1) {
                         return current * group_size_;
                     }
                 } else {
                     break;
                 }
-            } else {
-                uint32_t offset = 0;
-                // Found between
-                for (uint32_t i = 0; i <= last_index_; ++i) {
-                    if (bitmap_result[i] == 0) {
-                        offset += 64;
-                    } else {
-                        offset += lowestBit(bitmap_result[i]);
-                        break;
+            } else if (index == -1) {
+                // all small
+                begin = current;
+                if (compare_result[current] == 2) {
+                    compare_result[current] = 0;
+                    if (current == num_groups - 1) {
+                        return numEntry - 1;
                     }
+                    if (compare_result[current + 1] == 1) {
+                        return (current + 1) * group_size_;
+                    }
+                } else {
+                    break;
                 }
-                return current * group_size_ + offset;
+            } else {
+                return current * group_size_ + index;
             }
         }
         // No found in between, result on border
