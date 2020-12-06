@@ -79,23 +79,43 @@ namespace sboost {
 
         virtual ~SortedBitpack();
 
+        uint32_t equal(const uint8_t *data, uint32_t numEntry);
         uint32_t geq(const uint8_t *data, uint32_t numEntry);
 
     protected:
         uint64_t buffer_[8];
-        uint32_t *entry_in_block_;
         uint32_t group_size_;
         uint32_t group_bytes_;
+        uint32_t* entry_in_block_;
 
         uint32_t last_index_;
         uint32_t last_offset_;
 
         void (*loader_)(const uint8_t *, uint64_t *);
         void (*writer_)(__m512i, uint64_t*,uint64_t);
+        void (*writerinv_)(__m512i, uint64_t*,uint64_t);
 
-        uint8_t geqGroup(const uint8_t *group_start, uint64_t *);
+        /**
+         * Find the index of entries equals to target
+         * @param group_start
+         * @return
+         */
+        uint8_t eqGroup(const uint8_t *group_start, uint64_t *);
+        /**
+         * Compare all entries in the group with target, return a bitmap
+         * marking those geq target.
+         * @param group_start
+         */
+        void geqGroup(const uint8_t *group_start, uint64_t *);
         // Benchmark (loader_benchmark) shows this is not much faster
-        uint8_t geqGroup2(const uint8_t *group_start, uint64_t *);
+        /**
+         * Same as geqGroup, used to determine whether generated code is
+         * faster than dynamic code.
+         *
+         * Benchmark (loader_benchmark) shows this is not much faster
+         * @param group_start
+         */
+        void geqGroup2(const uint8_t *group_start, uint64_t *);
     };
 
     class BitpackCompare {

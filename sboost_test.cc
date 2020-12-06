@@ -10,7 +10,7 @@ using namespace sboost;
 
 void prepareData(uint8_t *);
 
-TEST(SBoost, Equal) {
+TEST(SBoostTest, Equal) {
     uint8_t bitpacked2[192];
     prepareData(bitpacked2);
 
@@ -29,7 +29,7 @@ TEST(SBoost, Equal) {
     }
 }
 
-TEST(SBoost, Equal256SmallWidth) {
+TEST(SBoostTest, Equal256SmallWidth) {
     uint32_t input[] = {1, 1, 2, 3, 1, 2, 1, 1, 2, 2, 1, 3, 1, 1, 2, 2,
                         1, 1, 2, 3, 1, 2, 1, 1, 2, 2, 1, 3, 1, 1, 2, 2,
                         1, 1, 2, 3, 1, 2, 1, 1, 2, 2, 1, 3, 1, 1, 2, 2,
@@ -49,7 +49,7 @@ TEST(SBoost, Equal256SmallWidth) {
     EXPECT_EQ(result[1], 0x34d334D3);
 }
 
-TEST(SBoost, Less256) {
+TEST(SBoostTest, Less256) {
     uint32_t input[] = {13, 22, 1, 9, 25, 17, 6, 22, 12, 31, 12, 21, 0, 5};
     uint8_t bitpacked[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
     byteutils::bitpack(input, 14, 5, bitpacked);
@@ -63,7 +63,7 @@ TEST(SBoost, Less256) {
 
 }
 
-TEST(SBoost, Greater256) {
+TEST(SBoostTest, Greater256) {
     uint32_t input[] = {13, 22, 1, 9, 25, 17, 6, 22, 12, 31, 12, 21, 0, 5};
     uint8_t bitpacked[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
     byteutils::bitpack(input, 14, 5, bitpacked);
@@ -77,7 +77,7 @@ TEST(SBoost, Greater256) {
 }
 
 
-TEST(SBoost, RangeLe256) {
+TEST(SBoostTest, RangeLe256) {
     uint32_t input[] = {13, 22, 1, 9, 25, 17, 6, 22, 12, 31, 12, 21, 0, 5};
     uint8_t bitpacked[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
     byteutils::bitpack(input, 14, 5, bitpacked);
@@ -90,7 +90,7 @@ TEST(SBoost, RangeLe256) {
     EXPECT_EQ(result[0], 0x8A2);
 }
 
-TEST(SBoost, Between256) {
+TEST(SBoostTest, Between256) {
     uint32_t input[] = {13, 22, 1, 9, 25, 17, 6, 22, 12, 31, 12, 21, 0, 5};
     uint8_t bitpacked[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
     byteutils::bitpack(input, 14, 5, bitpacked);
@@ -104,7 +104,7 @@ TEST(SBoost, Between256) {
 }
 
 
-TEST(SBoost, Equal512) {
+TEST(SBoostTest, Equal512) {
     uint8_t bitpacked2[192];
     prepareData(bitpacked2);
 
@@ -122,24 +122,25 @@ TEST(SBoost, Equal512) {
 }
 
 TEST(SortedBitpackTest, Geq) {
-    uint32_t input[512];
-    for (int i = 0; i < 512; ++i) {
+    uint32_t input[10000];
+    for (int i = 0; i < 10000; ++i) {
         input[i] = i;
     }
-    uint8_t bitpacked[512 * 4];
-    memset(bitpacked, 0, 2048);
-    byteutils::bitpack(input, 512, 9, bitpacked);
+    uint8_t bitpacked[10000 * 4];
+    memset(bitpacked, 0, 40000);
+    byteutils::bitpack(input, 10000, 14, bitpacked);
 
     auto result = 0;
+//    for(int i = 0 ; i < 10000;++i) {
 //    // Test search in the middle
-    SortedBitpack sbp(9, 139);
-    result = sbp.geq(bitpacked, 512);
-    EXPECT_EQ(139, result);
+//        SortedBitpack sbp(14, i);
+//        result = sbp.geq(bitpacked, 10000);
+//        EXPECT_EQ(i, result) << i;
+//    }
+    SortedBitpack sbp(14, 32);
+    result = sbp.geq(bitpacked, 10000);
+    EXPECT_EQ(32, result);
 
-    // Test on the front border
-    SortedBitpack sbp_fb(9, 144);
-    result = sbp_fb.geq(bitpacked, 512);
-    EXPECT_EQ(144, result);
 }
 
 TEST(BitpackCompareTest, Less) {
@@ -159,7 +160,7 @@ TEST(BitpackCompareTest, Less) {
     EXPECT_EQ(0x244d, /* 10 0100 0100 1101*/  result[0]);
 }
 
-TEST(SDelta, Cumsum) {
+TEST(SDeltaTest, Cumsum) {
 //    int32_t values[8] = {32432, 42442, 529532, 13442, 2525232, 3143243, 423432, 23232};
     int32_t values[8] = {1, 2, 3, 4, 5, 6, 7, 8};
     __m256i holder = _mm256_setr_epi32(values[0], values[1], values[2], values[3],

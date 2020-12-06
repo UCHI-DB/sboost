@@ -1001,5 +1001,620 @@ namespace sboost {
                                                          write15, write16, write17, write18, write19, write20, write21,
                                                          write22, write23, write24, write25, write26, write27, write28,
                                                          write29, write30, write31};
+
+        void writeinv1(__m512i res, uint64_t *bitmap, uint64_t extract) {}
+
+        void writeinv2(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 32) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 32) - 1);
+            bitmap[0] |= bits << 32;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 32) - 1);
+            bitmap[1] |= bits << 0;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 32) - 1);
+            bitmap[1] |= bits << 32;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 32) - 1);
+            bitmap[2] |= bits << 0;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 32) - 1);
+            bitmap[2] |= bits << 32;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 32) - 1);
+            bitmap[3] |= bits << 0;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 32) - 1);
+            bitmap[3] |= bits << 32;
+        }
+
+        void writeinv3(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 21) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 19) - 1);
+            bitmap[0] |= bits << 21;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 21) - 1);
+            bitmap[0] |= bits << 40;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 19) - 1);
+            bitmap[0] |= bits << 61;
+            bitmap[1] |= bits >> 3;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 21) - 1);
+            bitmap[1] |= bits << 16;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 19) - 1);
+            bitmap[1] |= bits << 37;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 21) - 1);
+            bitmap[1] |= bits << 56;
+            bitmap[2] |= bits >> 8;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 19) - 1);
+            bitmap[2] |= bits << 13;
+        }
+
+        void writeinv4(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 16) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 16) - 1);
+            bitmap[0] |= bits << 16;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 16) - 1);
+            bitmap[0] |= bits << 32;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 16) - 1);
+            bitmap[0] |= bits << 48;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 16) - 1);
+            bitmap[1] |= bits << 0;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 16) - 1);
+            bitmap[1] |= bits << 16;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 16) - 1);
+            bitmap[1] |= bits << 32;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 16) - 1);
+            bitmap[1] |= bits << 48;
+        }
+
+        void writeinv5(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 12) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 12) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 12) - 1);
+            bitmap[0] |= bits << 24;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 12) - 1);
+            bitmap[0] |= bits << 36;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 12) - 1);
+            bitmap[0] |= bits << 48;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 12) - 1);
+            bitmap[0] |= bits << 60;
+            bitmap[1] |= bits >> 4;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 12) - 1);
+            bitmap[1] |= bits << 8;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 12) - 1);
+            bitmap[1] |= bits << 20;
+        }
+
+        void writeinv6(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 10) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 10) - 1);
+            bitmap[0] |= bits << 10;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 10) - 1);
+            bitmap[0] |= bits << 20;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 10) - 1);
+            bitmap[0] |= bits << 30;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 10) - 1);
+            bitmap[0] |= bits << 40;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 10) - 1);
+            bitmap[0] |= bits << 50;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 10) - 1);
+            bitmap[0] |= bits << 60;
+            bitmap[1] |= bits >> 4;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 10) - 1);
+            bitmap[1] |= bits << 6;
+        }
+
+        void writeinv7(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 9) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 8) - 1);
+            bitmap[0] |= bits << 9;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 8) - 1);
+            bitmap[0] |= bits << 17;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 8) - 1);
+            bitmap[0] |= bits << 25;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 8) - 1);
+            bitmap[0] |= bits << 33;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 8) - 1);
+            bitmap[0] |= bits << 41;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 8) - 1);
+            bitmap[0] |= bits << 49;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 8) - 1);
+            bitmap[0] |= bits << 57;
+            bitmap[1] |= bits >> 7;
+        }
+
+        void writeinv8(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 8) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 8) - 1);
+            bitmap[0] |= bits << 8;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 8) - 1);
+            bitmap[0] |= bits << 16;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 8) - 1);
+            bitmap[0] |= bits << 24;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 8) - 1);
+            bitmap[0] |= bits << 32;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 8) - 1);
+            bitmap[0] |= bits << 40;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 8) - 1);
+            bitmap[0] |= bits << 48;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 8) - 1);
+            bitmap[0] |= bits << 56;
+        }
+
+        void writeinv9(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 7) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 6) - 1);
+            bitmap[0] |= bits << 7;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 6) - 1);
+            bitmap[0] |= bits << 13;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 6) - 1);
+            bitmap[0] |= bits << 19;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 7) - 1);
+            bitmap[0] |= bits << 25;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 7) - 1);
+            bitmap[0] |= bits << 32;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 6) - 1);
+            bitmap[0] |= bits << 39;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 6) - 1);
+            bitmap[0] |= bits << 45;
+        }
+
+        void writeinv10(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 6) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 6) - 1);
+            bitmap[0] |= bits << 6;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 6) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 6) - 1);
+            bitmap[0] |= bits << 18;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 6) - 1);
+            bitmap[0] |= bits << 24;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 6) - 1);
+            bitmap[0] |= bits << 30;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 6) - 1);
+            bitmap[0] |= bits << 36;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 6) - 1);
+            bitmap[0] |= bits << 42;
+        }
+
+        void writeinv11(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 5) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 5) - 1);
+            bitmap[0] |= bits << 5;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 5) - 1);
+            bitmap[0] |= bits << 10;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 5) - 1);
+            bitmap[0] |= bits << 15;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 5) - 1);
+            bitmap[0] |= bits << 20;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 5) - 1);
+            bitmap[0] |= bits << 25;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 5) - 1);
+            bitmap[0] |= bits << 30;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 5) - 1);
+            bitmap[0] |= bits << 35;
+        }
+
+        void writeinv12(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 5) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 5) - 1);
+            bitmap[0] |= bits << 5;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 5) - 1);
+            bitmap[0] |= bits << 10;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 5) - 1);
+            bitmap[0] |= bits << 15;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 5) - 1);
+            bitmap[0] |= bits << 20;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 5) - 1);
+            bitmap[0] |= bits << 25;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 5) - 1);
+            bitmap[0] |= bits << 30;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 5) - 1);
+            bitmap[0] |= bits << 35;
+        }
+
+        void writeinv13(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 4;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 8;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 16;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 20;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 24;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 28;
+        }
+
+        void writeinv14(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 4;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 8;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 16;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 20;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 24;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 28;
+        }
+
+        void writeinv15(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 4;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 8;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 16;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 20;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 24;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 28;
+        }
+
+        void writeinv16(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 4;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 8;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 16;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 20;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 24;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 4) - 1);
+            bitmap[0] |= bits << 28;
+        }
+
+        void writeinv17(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 3;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 6;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 9;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 15;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 18;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 21;
+        }
+
+        void writeinv18(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 3;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 6;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 9;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 15;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 18;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 21;
+        }
+
+        void writeinv19(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 3;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 6;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 9;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 15;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 18;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 21;
+        }
+
+        void writeinv20(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 3;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 6;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 9;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 15;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 18;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 21;
+        }
+
+        void writeinv21(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 3;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 5;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 8;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 11;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 13;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 3) - 1);
+            bitmap[0] |= bits << 16;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 19;
+        }
+
+        void writeinv22(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 2;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 4;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 6;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 8;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 10;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 14;
+        }
+
+        void writeinv23(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 2;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 4;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 6;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 8;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 10;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 14;
+        }
+
+        void writeinv24(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 2;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 4;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 6;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 8;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 10;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 14;
+        }
+
+        void writeinv25(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 2;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 4;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 6;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 8;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 10;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 14;
+        }
+
+        void writeinv26(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 2;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 4;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 6;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 8;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 10;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 14;
+        }
+
+        void writeinv27(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 2;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 4;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 6;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 8;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 10;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 14;
+        }
+
+        void writeinv28(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 2;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 4;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 6;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 8;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 10;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 14;
+        }
+
+        void writeinv29(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 2;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 4;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 6;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 8;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 10;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 14;
+        }
+
+        void writeinv30(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 2;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 4;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 6;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 8;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 10;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 12;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 14;
+        }
+
+        void writeinv31(__m512i res, uint64_t *bitmap, uint64_t extract) {
+            uint64_t bits = 0;
+            bits = ~_pext_u64(res[0], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 0;
+            bits = ~_pext_u64(res[1], extract) & ((1L << 1) - 1);
+            bitmap[0] |= bits << 2;
+            bits = ~_pext_u64(res[2], extract) & ((1L << 1) - 1);
+            bitmap[0] |= bits << 3;
+            bits = ~_pext_u64(res[3], extract) & ((1L << 1) - 1);
+            bitmap[0] |= bits << 4;
+            bits = ~_pext_u64(res[4], extract) & ((1L << 1) - 1);
+            bitmap[0] |= bits << 5;
+            bits = ~_pext_u64(res[5], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 6;
+            bits = ~_pext_u64(res[6], extract) & ((1L << 2) - 1);
+            bitmap[0] |= bits << 8;
+            bits = ~_pext_u64(res[7], extract) & ((1L << 1) - 1);
+            bitmap[0] |= bits << 10;
+        }
+
+        void
+        (*writeinvs[32])(__m512i, uint64_t *, uint64_t) = {writeinv1, writeinv1, writeinv2, writeinv3, writeinv4, writeinv5, writeinv6, writeinv7,
+                                                            writeinv8, writeinv9, writeinv10, writeinv11, writeinv12, writeinv13, writeinv14,
+                                                            writeinv15, writeinv16, writeinv17, writeinv18, writeinv19, writeinv20, writeinv21,
+                                                            writeinv22, writeinv23, writeinv24, writeinv25, writeinv26, writeinv27, writeinv28,
+                                                            writeinv29, writeinv30, writeinv31};
+
     }
 }
