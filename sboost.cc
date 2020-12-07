@@ -488,6 +488,41 @@ namespace sboost {
         return -1;
     }
 
+    int8_t SortedBitpack::greaterGroup(const uint8_t *group_start, uint64_t *res) {
+        loader_(group_start, buffer_);
+
+        // Use SBoost algorithm to compare the loaded block with spanned
+        __m512i loaded = _mm512_setr_epi64(buffer_[0], buffer_[1], buffer_[2], buffer_[3],
+                                           buffer_[4], buffer_[5], buffer_[6], buffer_[7]);
+        __m512i nloaded = _mm512_xor_si512(loaded, _mm512_set1_epi32(-1));
+        __m512i l = _mm512_sub_epi64(g2, _mm512_and_si512(loaded, mask));
+        __m512i r = _mm512_and_si512(_mm512_or_si512(nloaded, spanned),
+                                     _mm512_or_si512(_mm512_and_si512(nloaded, spanned), l));
+
+        memset(res, 0, 64);
+        writerinv_(r, res, extract);
+
+        auto first = res[0] & 1;
+        auto last = (res[last_index_] >> last_offset_) & 1;
+        if (first) {
+            return 0;
+        } else if (!last) {
+            return -1;
+        } else {
+            uint32_t offset = 0;
+            // Found between
+            for (uint32_t i = 0; i <= last_index_; ++i) {
+                if (res[i] == 0) {
+                    offset += 64;
+                } else {
+                    offset += lowestBit(res[i]);
+                    break;
+                }
+            }
+            return offset;
+        }
+    }
+
     int8_t SortedBitpack::geqGroup(const uint8_t *group_start, uint64_t *res) {
         loader_(group_start, buffer_);
 
@@ -622,6 +657,50 @@ namespace sboost {
             last_offset_ = ((remain - 1) & 0x3F);
         }
         auto index = geqGroup(data + begin * group_bytes_, bitmap_result);
+        return (index == -1) ? ((begin + 1) * group_size_) : (begin * group_size_ + index);
+    }
+
+    uint32_t SortedBitpack::greater(const uint8_t *data, uint32_t numEntry) {
+        // Init these here as they will be changed by the last call of geqGroup
+        last_index_ = (group_size_ - 1) >> 6;
+        last_offset_ = ((group_size_ - 1) & 0x3F);
+        auto num_groups = (numEntry + group_size_ - 1) / group_size_;
+
+        uint64_t bitmap_result[8];
+
+        uint32_t begin = 0;
+        uint32_t end = num_groups - 1;
+        while (begin < end) {
+            auto current = (begin + end + 1) / 2;
+            const uint8_t *current_buffer = data + current * group_bytes_;
+            // Make comparison
+            auto index = greaterGroup(current_buffer, bitmap_result);
+            if (index == -1) {
+                // all leq
+                begin = current + 1;
+            } else if (index != 0) {
+                return current * group_size_ + index;
+            } else {
+                // This early stop does not bring obvious performance improvement
+                // Comment it out for code clarity
+//                auto eqindex = eqGroup(current_buffer, bitmap_result);
+//                if (eqindex != -1) {
+//                    return current * group_size_ + eqindex;
+//                }
+                end = current - 1;
+            }
+        }
+        if (begin > end) {
+            //
+            return begin * group_size_;
+        }
+        // Still need to search left group
+        if (begin == num_groups - 1) {
+            auto remain = numEntry % group_size_;
+            last_index_ = (remain - 1) >> 6;
+            last_offset_ = ((remain - 1) & 0x3F);
+        }
+        auto index = greaterGroup(data + begin * group_bytes_, bitmap_result);
         return (index == -1) ? ((begin + 1) * group_size_) : (begin * group_size_ + index);
     }
 

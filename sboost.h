@@ -79,8 +79,27 @@ namespace sboost {
 
         virtual ~SortedBitpack();
 
+        /**
+         * Find the index of the entry equal to target
+         * @param data
+         * @param numEntry
+         * @return -1 if not found, otherwise the index
+         */
         uint32_t equal(const uint8_t *data, uint32_t numEntry);
+        /**
+         * Find the index of first entry geq target
+         * @param data
+         * @param numEntry
+         * @return
+         */
         uint32_t geq(const uint8_t *data, uint32_t numEntry);
+        /**
+         * Find the index of first entry larger than target
+         * @param data
+         * @param numEntry
+         * @return
+         */
+        uint32_t greater(const uint8_t *data, uint32_t numEntry);
 
     protected:
         uint64_t buffer_[8];
@@ -101,6 +120,8 @@ namespace sboost {
          * @return
          */
         int8_t eqGroup(const uint8_t *group_start, uint64_t *);
+
+        int8_t greaterGroup(const uint8_t *group_start, uint64_t *);
         /**
          * Find the index of first entry that is geq target.
          * @param group_start
