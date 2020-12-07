@@ -53,3 +53,4 @@ BENCHMARK_F(SboostBenchmark, Template)(benchmark::State &state) {
         tbp.geq(output_, numEntry_, res_, 0);
     }
 }
+

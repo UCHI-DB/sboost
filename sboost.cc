@@ -462,9 +462,6 @@ namespace sboost {
         entry_in_block_ = loader::entryInBlocks[bitWidth];
 
         group_bytes_ = (group_size_ * bitWidth) >> 3;
-
-        last_index_ = (group_size_ - 1) >> 6;
-        last_offset_ = ((group_size_ - 1) & 0x3F);
     }
 
     SortedBitpack::~SortedBitpack() noexcept {}
@@ -545,85 +542,77 @@ namespace sboost {
     }
 
     uint32_t SortedBitpack::equal(const uint8_t *data, uint32_t numEntry) {
-        auto num_groups = (numEntry + 1) / group_size_;
-        // Estimate group size
+        // Init these here as they will be changed by the last call of geqGroup
+        last_index_ = (group_size_ - 1) >> 6;
+        last_offset_ = ((group_size_ - 1) & 0x3F);
+        auto num_groups = (numEntry + group_size_ - 1) / group_size_;
 
         uint64_t bitmap_result[8];
-
-        uint32_t begin = 0;
-        uint32_t end = num_groups - 1;
-        while (begin != end) {
-            auto current = (begin + end) / 2;
-            const uint8_t *current_buffer = data + current * group_bytes_;
-//            bitmap_result[bitmap_last_index] = -1;
-            // Make comparison
-            auto index = geqGroup(current_buffer, bitmap_result);
-            if (index != -1) {
-                end = current;
-                auto eqindex = eqGroup(current_buffer, bitmap_result);
-                if (eqindex != -1) {
-                    return current * group_size_ + eqindex;
-                }
-            } else {
-                // If all small
-                begin = current;
-            }
-        }
-        // No found in between, result on border
-        return (uint32_t) -1;
-    }
-
-    uint32_t SortedBitpack::geq(const uint8_t *data, uint32_t numEntry) {
-        auto num_groups = (numEntry + 1) / group_size_;
-        // Estimate group size
-
-        uint64_t bitmap_result[8];
-
-        uint8_t compare_result[num_groups];
-        memset(compare_result, 2, num_groups);
 
         uint32_t begin = 0;
         uint32_t end = num_groups - 1;
         while (begin < end) {
             auto current = (begin + end + 1) / 2;
             const uint8_t *current_buffer = data + current * group_bytes_;
-//            bitmap_result[bitmap_last_index] = -1;
             // Make comparison
             auto index = geqGroup(current_buffer, bitmap_result);
-            // If all large
-            if (index == 0) {
-                end = current;
-                if (compare_result[current] == 2) {
-                    compare_result[current] = 1;
-                    if (current == 0) {
-                        return 0;
-                    }
-                    if (compare_result[current - 1] == 0) {
-                        return current * group_size_;
-                    }
-                } else {
-                    break;
-                }
-            } else if (index == -1) {
+            if (index == -1) {
                 // all small
                 begin = current;
-                if (compare_result[current] == 2) {
-                    compare_result[current] = 0;
-                    if (current == num_groups - 1) {
-                        return numEntry - 1;
-                    }
-                    if (compare_result[current + 1] == 1) {
-                        return (current + 1) * group_size_;
-                    }
-                } else {
-                    break;
-                }
             } else {
-                return current * group_size_ + index;
+                auto eqindex = eqGroup(current_buffer, bitmap_result);
+                if (eqindex != -1) {
+                    return current * group_size_ + eqindex;
+                }
+                end = current - 1;
             }
         }
-        // No found in between, result on border
-        return (uint32_t) -1;
+        // Still need to search left group
+        if (begin == num_groups - 1) {
+            auto remain = numEntry % group_size_;
+            last_index_ = (remain - 1) >> 6;
+            last_offset_ = ((remain - 1) & 0x3F);
+        }
+        auto index = eqGroup(data + begin * group_bytes_, bitmap_result);
+        return (index == -1) ? -1 : (begin * group_size_ + index);
+    }
+
+    uint32_t SortedBitpack::geq(const uint8_t *data, uint32_t numEntry) {
+        // Init these here as they will be changed by the last call of geqGroup
+        last_index_ = (group_size_ - 1) >> 6;
+        last_offset_ = ((group_size_ - 1) & 0x3F);
+        auto num_groups = (numEntry + group_size_ - 1) / group_size_;
+
+        uint64_t bitmap_result[8];
+
+        uint32_t begin = 0;
+        uint32_t end = num_groups - 1;
+        while (begin < end) {
+            auto current = (begin + end + 1) / 2;
+            const uint8_t *current_buffer = data + current * group_bytes_;
+            // Make comparison
+            auto index = geqGroup(current_buffer, bitmap_result);
+            if (index == -1) {
+                // all small
+                begin = current;
+            } else if (index != 0) {
+                return current * group_size_ + index;
+            } else {
+                auto eqindex = eqGroup(current_buffer, bitmap_result);
+                if (eqindex != -1) {
+                    return current * group_size_ + eqindex;
+                }
+                end = current - 1;
+            }
+        }
+        // Still need to search left group
+        if (begin == num_groups - 1) {
+            auto remain = numEntry % group_size_;
+            last_index_ = (remain - 1) >> 6;
+            last_offset_ = ((remain - 1) & 0x3F);
+        }
+        auto index = geqGroup(data + begin * group_bytes_, bitmap_result);
+        return (index == -1) ? ((begin + 1) * group_size_) : (begin * group_size_ + index);
     }
 
     BitpackCompare::BitpackCompare(uint32_t bitWidth) {

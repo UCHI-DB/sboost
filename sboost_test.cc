@@ -121,7 +121,7 @@ TEST(SBoostTest, Equal512) {
     }
 }
 
-TEST(SortedBitpackTest, Geq) {
+TEST(SortedBitpackTest, GeqOnEq) {
     uint32_t input[10000];
     for (int i = 0; i < 10000; ++i) {
         input[i] = i;
@@ -130,17 +130,73 @@ TEST(SortedBitpackTest, Geq) {
     memset(bitpacked, 0, 40000);
     byteutils::bitpack(input, 10000, 14, bitpacked);
 
+
     auto result = 0;
-    for(int i = 0 ; i < 10000;++i) {
-    // Test search in the middle
+    for (int i = 0; i < 10000; ++i) {
+        // Test search in the middle
         SortedBitpack sbp(14, i);
         result = sbp.geq(bitpacked, 10000);
         EXPECT_EQ(i, result) << i;
     }
-//    SortedBitpack sbp(14, 9952);
-//    result = sbp.geq(bitpacked, 10000);
-//    EXPECT_EQ(9952, result);
+}
 
+TEST(SortedBitpackTest, GeqOnSkip) {
+    uint32_t input[10000];
+    for (int i = 0; i < 10000; ++i) {
+        input[i] = i * 2;
+    }
+    uint8_t bitpacked[10000 * 4];
+    memset(bitpacked, 0, 40000);
+    byteutils::bitpack(input, 10000, 15, bitpacked);
+
+    auto result = 0;
+    for (int i = 0; i < 19999; ++i) {
+        // Test search in the middle
+        SortedBitpack sbp(15, i);
+        result = sbp.geq(bitpacked, 10000);
+        ASSERT_EQ(((i + 1) / 2), result) << i;
+    }
+}
+
+TEST(SortedBitpackTest, EqOnEq) {
+    uint32_t input[10000];
+    for (int i = 0; i < 10000; ++i) {
+        input[i] = i;
+    }
+    uint8_t bitpacked[10000 * 4];
+    memset(bitpacked, 0, 40000);
+    byteutils::bitpack(input, 10000, 14, bitpacked);
+
+
+    auto result = 0;
+    for (int i = 0; i < 10000; ++i) {
+        // Test search in the middle
+        SortedBitpack sbp(14, i);
+        result = sbp.equal(bitpacked, 10000);
+        EXPECT_EQ(i, result) << i;
+    }
+}
+
+TEST(SortedBitpackTest, EqOnSkip) {
+    uint32_t input[10000];
+    for (int i = 0; i < 10000; ++i) {
+        input[i] = i * 2;
+    }
+    uint8_t bitpacked[10000 * 4];
+    memset(bitpacked, 0, 40000);
+    byteutils::bitpack(input, 10000, 15, bitpacked);
+
+    auto result = 0;
+    for (int i = 0; i < 19999; ++i) {
+        // Test search in the middle
+        SortedBitpack sbp(15, i);
+        result = sbp.equal(bitpacked, 10000);
+        if (i % 2) {
+            ASSERT_EQ(-1, result) << i;
+        } else {
+            ASSERT_EQ(i / 2, result) << i;
+        }
+    }
 }
 
 TEST(BitpackCompareTest, Less) {
