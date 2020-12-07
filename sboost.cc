@@ -558,13 +558,17 @@ namespace sboost {
             auto index = geqGroup(current_buffer, bitmap_result);
             if (index == -1) {
                 // all small
-                begin = current;
+                begin = current + 1;
             } else {
                 auto eqindex = eqGroup(current_buffer, bitmap_result);
                 if (eqindex != -1) {
                     return current * group_size_ + eqindex;
                 }
-                end = current - 1;
+                if (index != 0) {
+                    return -1;
+                } else {
+                    end = current - 1;
+                }
             }
         }
         // Still need to search left group
@@ -594,16 +598,22 @@ namespace sboost {
             auto index = geqGroup(current_buffer, bitmap_result);
             if (index == -1) {
                 // all small
-                begin = current;
+                begin = current + 1;
             } else if (index != 0) {
                 return current * group_size_ + index;
             } else {
-                auto eqindex = eqGroup(current_buffer, bitmap_result);
-                if (eqindex != -1) {
-                    return current * group_size_ + eqindex;
-                }
+                // This early stop does not bring obvious performance improvement
+                // Comment it out for code clarity
+//                auto eqindex = eqGroup(current_buffer, bitmap_result);
+//                if (eqindex != -1) {
+//                    return current * group_size_ + eqindex;
+//                }
                 end = current - 1;
             }
+        }
+        if (begin > end) {
+            //
+            return begin * group_size_;
         }
         // Still need to search left group
         if (begin == num_groups - 1) {

@@ -39,20 +39,20 @@ public:
     }
 };
 
-BENCHMARK_F(SboostBenchmark, Dynamic)(benchmark::State &state) {
-    for (auto _ : state) {
-        //run your benchmark
-        sboost::Bitpack bp(11, 131);
-        bp.geq(output_, numEntry_, res_, 0);
-    }
-}
-
-BENCHMARK_F(SboostBenchmark, Template)(benchmark::State &state) {
-    for (auto _ : state) {
-        sboost::TemplateBitpack tbp(11, 131);
-        tbp.geq(output_, numEntry_, res_, 0);
-    }
-}
+//BENCHMARK_F(SboostBenchmark, Dynamic)(benchmark::State &state) {
+//    for (auto _ : state) {
+//        //run your benchmark
+//        sboost::Bitpack bp(11, 131);
+//        bp.geq(output_, numEntry_, res_, 0);
+//    }
+//}
+//
+//BENCHMARK_F(SboostBenchmark, Template)(benchmark::State &state) {
+//    for (auto _ : state) {
+//        sboost::TemplateBitpack tbp(11, 131);
+//        tbp.geq(output_, numEntry_, res_, 0);
+//    }
+//}
 
 int32_t binary_search(vector<uint32_t> data, int target) {
     auto begin = 0;

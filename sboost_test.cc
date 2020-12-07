@@ -175,6 +175,10 @@ TEST(SortedBitpackTest, EqOnEq) {
         result = sbp.equal(bitpacked, 10000);
         EXPECT_EQ(i, result) << i;
     }
+
+//    SortedBitpack sbp(14, 32);
+//    result = sbp.equal(bitpacked, 10000);
+//    EXPECT_EQ(32, result);
 }
 
 TEST(SortedBitpackTest, EqOnSkip) {
