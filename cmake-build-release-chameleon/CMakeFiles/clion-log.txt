@@ -1,0 +1,7 @@
+/usr/local/bin/cmake -DCMAKE_BUILD_TYPE=Release -DSBOOST_BENCHMARK=ON -G "CodeBlocks - Unix Makefiles" /tmp/tmp.i9YVyPYwPO
+Configured for RELEASE build (set with cmake -DCMAKE_BUILD_TYPE={release,debug,...})
+-- Build Type: RELEASE
+-- Building benchmark from source
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /tmp/tmp.i9YVyPYwPO/cmake-build-release-chameleon

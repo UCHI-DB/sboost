@@ -54,7 +54,7 @@ public:
 //    }
 //}
 
-int32_t binary_search(vector<uint32_t> data, int target) {
+int32_t binary_search(vector<uint32_t> &data, int target) {
     auto begin = 0;
     auto end = data.size() - 1;
     while (begin < end) {
@@ -70,6 +70,10 @@ int32_t binary_search(vector<uint32_t> data, int target) {
     return begin;
 }
 
+int32_t binary_search_packed(uint8_t* data, int target, uint8_t offset) {
+    
+}
+
 class SearchBenchmark : public benchmark::Fixture {
 protected:
     vector<uint32_t> data_;
@@ -81,10 +85,9 @@ protected:
 public:
 
     SearchBenchmark() {
-        numEntry_ = 100000;
+        numEntry_ = 1024;
         bitWidth_ = 17;
         output_ = (uint8_t *) malloc(sizeof(uint32_t) * numEntry_);
-        res_ = (uint64_t *) malloc(sizeof(uint64_t) * (numEntry_ + 1) / 64);
 
         for (uint32_t i = 0; i < numEntry_; ++i) {
             data_.push_back(i);
@@ -100,17 +103,29 @@ public:
 
 BENCHMARK_F(SearchBenchmark, STL)(benchmark::State &state) {
     for (auto _: state) {
-        for (int i = 0; i < 100000; ++i) {
-            result_ = binary_search(data_, i);
-        }
+//        for (int i = 0; i < numEntry_; ++i) {
+        auto i = numEntry_ / 5;
+        result_ = binary_search(data_, i);
+//        }
     }
 }
 
 BENCHMARK_F(SearchBenchmark, SBoost)(benchmark::State &state) {
     for (auto _ : state) {
-        for (int i = 0; i < 100000; ++i) {
-            sboost::SortedBitpack sbp(bitWidth_, i);
-            result_ = sbp.equal(output_, numEntry_);
-        }
+//        for (int i = 0; i < numEntry_; ++i) {
+        auto i = numEntry_ / 5;
+        sboost::SortedBitpack sbp(bitWidth_, i);
+        result_ = sbp.geq(output_, numEntry_);
+//        }
+    }
+}
+
+BENCHMARK_F(SearchBenchmark, SBoostSeq)(benchmark::State &state) {
+    for (auto _ : state) {
+//        for (int i = 0; i < numEntry_; ++i) {
+        auto i = numEntry_ / 5;
+        sboost::Bitpack bp(bitWidth_, i);
+        result_ = bp.geq(output_, numEntry_);
+//        }
     }
 }

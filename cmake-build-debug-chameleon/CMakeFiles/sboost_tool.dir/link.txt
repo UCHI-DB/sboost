@@ -1,0 +1,1 @@
+/usr/bin/c++   -ggdb -O0 -g   CMakeFiles/sboost_tool.dir/tool.cc.o  -o sboost_tool libsboostd.a 
