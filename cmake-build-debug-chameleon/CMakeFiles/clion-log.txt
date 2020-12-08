@@ -1,7 +1,0 @@
-/usr/local/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DSBOOST_TEST=ON -G "CodeBlocks - Unix Makefiles" /tmp/tmp.i9YVyPYwPO
-Configured for DEBUG build (set with cmake -DCMAKE_BUILD_TYPE={release,debug,...})
--- Build Type: DEBUG
--- Building gtest from source
--- Configuring done
--- Generating done
--- Build files have been written to: /tmp/tmp.i9YVyPYwPO/cmake-build-debug-chameleon
