@@ -6,12 +6,21 @@ See http://people.cs.uchicago.edu/~hajiang/paper/damon2018_sboost.pdf for more t
 
 ## System Requirement
 
-SBoost uses CMake for building. It requires C++14 and CMake > 3.15. We developed/tested the library with GCC-9 and CMake 3.16
+SBoost uses CMake for building. It requires C++14 and CMake >= 3.15. We developed/tested the library with GCC-9 and CMake 3.16.
 
 SBoost requires AVX512 support and is tested on Skylake CPU platforms. For other CPU platforms, please make sure the following compilation flags are supported
 
 `-msse4.1 -mavx -mavx2 -mavx512f -mavx512bw -mavx512dq -mavx512vl -mbmi2`
- 
+
+## Use SBoost
+
+### Filter Bit-Packed Data
+The following code use SBoost to filter bit-packed integers
+```
+```
+### Unpack Bit-Packed Data
+
+### Unpack Delta Encoded Data
 
 ## Import SBoost as a Thirdparty Library
 
