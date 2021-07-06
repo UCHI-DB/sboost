@@ -75,7 +75,7 @@ set(SBOOST_HEADER "unpacker.h;sboost.h;byteutils.h")
 
 add_library(sboost_objlib OBJECT ${SBOOST_SRC})
 set_property(TARGET sboost_objlib PROPERTY POSITION_INDEPENDENT_CODE 1)
-target_compile_options(sboost_objlib PUBLIC -pthread -fvisibility=hidden ${SBOOST_SIMD_FLAGS})
+target_compile_options(sboost_objlib PUBLIC -pthread -fvisibility=default ${SBOOST_SIMD_FLAGS})
 
 if(CMAKE_BUILD_TYPE MATCHES DEBUG)
     set(CMAKE_SBOOST_DEBUG_EXTENSION "d")

@@ -235,8 +235,8 @@ namespace sboost {
                     counter += entryInBlock[i];
                 }
             }
-            return -1;
         }
+        return -1;
     }
 
     void Bitpack::greater(const uint8_t *data, uint32_t numEntry, uint64_t *res, uint32_t resoffset) {
